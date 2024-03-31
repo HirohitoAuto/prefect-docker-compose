@@ -2,7 +2,7 @@ import httpx
 from prefect import flow
 
 
-@flow(retries=3, retry_delay_seconds=5, log_prints=True)
+@flow(log_prints=True)
 def get_repo_info(repo_name: str = "PrefectHQ/prefect"):
     url = f"https://api.github.com/repos/{repo_name}"
     response = httpx.get(url)
@@ -14,4 +14,10 @@ def get_repo_info(repo_name: str = "PrefectHQ/prefect"):
 
 
 if __name__ == "__main__":
-    get_repo_info()
+    get_repo_info.serve(
+        name="scheduled_job",
+        cron="* * * * *",
+        tags=["fstcall", "scheduled"],
+        description="Given a GitHub repository, logs repository statistics for that repo.",
+        version="tutorial/deployments",
+    )
